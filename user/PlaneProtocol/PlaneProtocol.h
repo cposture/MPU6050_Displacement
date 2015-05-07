@@ -43,6 +43,7 @@
 **************************************************************/
 void Data_Send_Status(float Pitch, float Roll, float Yaw, int16 *gyro, int16 *accel);
 void Send_Data(int16 *Gyro, int16 *Accel);
+void ReportData(char chrType,int16 ax,int16 ay,int16 az,int16 t);
 /**************************************************************
 *	End-Multi-Include-Prevent Section
 **************************************************************/

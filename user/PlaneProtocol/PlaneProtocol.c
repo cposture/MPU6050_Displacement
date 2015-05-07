@@ -151,3 +151,20 @@ void Send_Data(int16 *Gyro, int16 *Accel)
 	for (i = 0; i<_cnt; i++)
 		printf("%c", data_to_send[i]);
 }
+
+void ReportData(char chrType,int16 ax,int16 ay,int16 az,int16 t)
+{
+        char cData = 0;
+        char cCRC = 0;
+        putchar(0x55);     cCRC+=0x55;
+        putchar(chrType);  cCRC+=chrType;       
+        cData = ax;     putchar(cData);  cCRC+=cData;
+        cData = ax>>8;  putchar(cData);  cCRC+=cData;
+        cData = ay;     putchar(cData);  cCRC+=cData;
+        cData = ay>>8;  putchar(cData);  cCRC+=cData;
+        cData = az;     putchar(cData);  cCRC+=cData;
+        cData = az>>8;  putchar(cData);  cCRC+=cData;        
+        cData = t;      putchar(cData);  cCRC+=cData;
+        cData = t>>8;   putchar(cData);  cCRC+=cData;
+        putchar(cCRC);          
+}

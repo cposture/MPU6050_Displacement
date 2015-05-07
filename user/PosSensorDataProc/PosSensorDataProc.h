@@ -42,6 +42,9 @@
 #define SIGMA_FILTER_OPEN 	1
 #define AVERGE_FILTER_OPEN 	0
 
+#define GYRO_DRIFT_H	300
+#define GYRO_DRIFT_L	-300
+
 #if  SIGMA_FILTER_OPEN
 extern int16	acc_xyz_data[3][ACC_FILTER_COUNT];
 #endif
@@ -58,6 +61,7 @@ void movement_End_Check(int32 accel_n[3], int32 vel[2][3]);
 void position(int32 accel_n[2][3], int32 vel[2][3], int32 displayment[2][3]);
 void sigma_Filter(int16 accel[][ACC_FILTER_COUNT], int32 accel_res[][ACC_FILTER_COUNT], int16 pos, int16 N, int16 K);
 void insert_AccelData(int16 accel[3]);
+int16 originalPlace_Drift(int16 gyro[3]);
 /**************************************************************
 *	End-Multi-Include-Prevent Section
 **************************************************************/

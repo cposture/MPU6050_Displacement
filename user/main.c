@@ -51,7 +51,7 @@
 #include "bsp_key.h"
 #endif
 
-#if DEBUG
+#if ACCEL_SHOW
 #include "PlaneProtocol.h"
 #endif
 
@@ -87,6 +87,8 @@ unsigned char more;
 long quat[4];
 
 int rtn_value;
+
+int g_drift = 0;
 
 /* debug用的变量 */
 int16 i;
@@ -270,6 +272,12 @@ int main(void)
 		
         dmp_read_fifo(gyro, accel, quat, &timestamp, &sensors, &more);
 		
+//		if(originalPlace_Drift(gyro) == 1)
+//		{
+//			g_drift = 1;
+//		}
+
+		
 		#if  SIGMA_FILTER_OPEN
 		insert_AccelData(accel);
 		#endif
@@ -326,12 +334,35 @@ int main(void)
             accel_show [2] = accel_res[1][2]/16384;  
 			
 //			printf("%d, %d, %d\n",accel_show [0],accel_show [1],accel_show [2]);
+//			printf("%d, %d, %d\r\n",gyro[0],gyro[1],gyro[2]);
+			
+			#if UPPER_COMPUTER_NIMING
 			Send_Data(gyro,accel_show);
+			#endif
+			
+			#if UPPER_COMPUTER_MATLAB
+			ReportData(0x51,accel_show [0],accel_show [1],accel_show [2],0);
+			ReportData(0x52,gyro [0],gyro [1],gyro [2],0);
+			#endif
+			
 			#endif
 
 			position(accel_res,vel,disp);
 			
 			#if USB_SEND_DATA
+//			if(g_drift)
+//			{
+//				g_drift = 0;
+//				delay_ms(3);
+//				
+//			}
+//			else
+//			{
+//				frame.X = (disp[0][0] - disp[1][0])*10/16384;
+//				frame.Y = (disp[1][1] - disp[0][1])*10/16384;
+//				sendCom_USBComm(&frame , 1000);
+//				LED1_TOGGLE;
+//			}
 			frame.X = (disp[0][0] - disp[1][0])*10/16384;
 			frame.Y = (disp[1][1] - disp[0][1])*10/16384;
 			sendCom_USBComm(&frame , 1000);
@@ -346,8 +377,11 @@ int main(void)
 			vel_show[0] = vel[1][0];
 			vel_show[1] = vel[1][1];
 			vel_show[2] = vel[1][2];
-						
-			Send_Data(vel_show,disp_show);			
+			
+			#if UPPER_COMPUTER_NIMING
+			Send_Data(vel_show,disp_show);
+			#endif
+			
 			#endif
 			
 			movement_End_Check(accel_res[1],vel);

@@ -260,3 +260,11 @@ void insert_AccelData(int16 accel[3])
 	}
 }
 #endif
+
+int16 originalPlace_Drift(int16 gyro[3])
+{
+	if((gyro[0] > GYRO_DRIFT_H || gyro[0] < GYRO_DRIFT_L)  || (gyro[1] > GYRO_DRIFT_H || gyro[1] < GYRO_DRIFT_L) || (gyro[2] > GYRO_DRIFT_H || gyro[2] < GYRO_DRIFT_L))
+		return 1;
+	else
+		return 0;
+}
