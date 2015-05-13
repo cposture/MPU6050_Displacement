@@ -47,6 +47,11 @@
 int16	acc_xyz_data[3][ACC_FILTER_COUNT] = { 0 };
 int16	acc_data_index = 0;
 #endif
+
+#if ANGLE_FILTER_AVERGE_OPEN
+int16 angle_data_index;
+int32 angle_xyz_data[3][ANGLE_FILTER_COUNT] = { 0 };
+#endif
 /**************************************************************
 *	File Static Variable Define Section
 **************************************************************/
@@ -268,3 +273,52 @@ int16 originalPlace_Drift(int16 gyro[3])
 	else
 		return 0;
 }
+
+#if ANGLE_FILTER_AVERGE_OPEN
+/**
+*	Name...........:	angle_Filter
+*	description....:	对原始数据值进行滤波
+*	param..........:	angle[in,changed]	:原始数据加速度值
+						angle_ave[out]	:滤波得到的加速度值
+*	return.........:	
+*	precondition...:
+*	postcondition..:
+*/
+void angle_Filter(int32 angle[3], int32 angle_ave[3])
+{
+	int i, j;
+	int32	angle_data_sum[3] = { 0 };
+
+	//先进行一次机械窗口滤波
+	for (i = 0; i < 3; i++)
+	{
+		if (angle[i] < ANGLE_WINDOW_H && angle[i] > ANGLE_WINDOW_L)
+			angle[i] = 0;
+	}
+
+	//将i轴的加速度保存在angle_data_index列中
+	for (i = 0; i<3; i++)
+	{
+		angle_xyz_data[i][acc_data_index] = angle[i];
+	}
+
+	//angle_data_index循环加1
+	angle_data_index++;
+
+	if (angle_data_index == ANGLE_FILTER_COUNT)
+	{
+		angle_data_index = 0;
+	}
+
+	//行求和
+	for (i = 0; i<3; i++)
+	{
+		for (j = 0; j<ANGLE_FILTER_COUNT; j++)
+		{
+			angle_data_sum[i] += angle_xyz_data[i][j];
+		}
+		angle_ave[i] = angle_data_sum[i] / ANGLE_FILTER_COUNT;
+	}
+
+}
+#endif

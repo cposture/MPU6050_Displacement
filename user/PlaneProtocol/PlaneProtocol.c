@@ -70,7 +70,7 @@
 *	precondition...:	用到了printf，需要重定向printf到串口及串口的相关初始化
 *	postcondition..:	
 */
-void Data_Send_Status(float Pitch, float Roll, float Yaw, int16 *gyro, int16 *accel)
+void Data_Send_Status(float Pitch, float Roll, float Yaw)
 {
 	unsigned char i = 0;
 	unsigned char _cnt = 0, sum = 0;

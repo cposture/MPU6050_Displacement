@@ -7,13 +7,13 @@
 
 //
 
-#define AnBT_MPU6050_INT			GPIO_Pin_3		//PB3
-#define AnBT_MPU6050_INT_PORT	GPIOB
+#define AnBT_MPU6050_INT			GPIO_Pin_5		//PB3
+#define AnBT_MPU6050_INT_PORT	GPIOC
 //
 #define ANBT_MPU6050_INT_STATE   GPIO_ReadInputDataBit(AnBT_MPU6050_INT_PORT, AnBT_MPU6050_INT)
 //
-#define ANBT_I2C_SDA 		GPIO_Pin_11	 
-#define ANBT_I2C_SCL 		GPIO_Pin_10	
+#define ANBT_I2C_SDA 		GPIO_Pin_11
+#define ANBT_I2C_SCL 		GPIO_Pin_14
 #define ANBT_I2C_PORT   GPIOB
 //
 #define ANBT_I2C_SCL_0 		GPIO_ResetBits(ANBT_I2C_PORT, ANBT_I2C_SCL)

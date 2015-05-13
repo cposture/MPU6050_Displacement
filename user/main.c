@@ -76,10 +76,16 @@
 **************************************************************/
 struct int_param_s int_param;
 signed char gyro_orientation[9] = {1, 0, 0, 0,1, 0, 0, 0, 1};
-float q[4],Pitch, Roll,Yaw;
+float q[4];
 
 int16 gyro[3], accel[3];
+#if OPEN_DISP
 int32 vel[2][3]={0},disp[2][3] = {0},accel_ave[3],accel_res[2][3]={0};
+#endif
+
+#if OPEN_ANGLE
+int32 angle[3],angle_res[2][3],angle_ave[3];	
+#endif
 
 unsigned long timestamp,time_pre;
 short sensors = INV_XYZ_GYRO| INV_XYZ_ACCEL | INV_WXYZ_QUAT;
@@ -105,7 +111,7 @@ int16 disp_show[3],vel_show[3];
 USBFrame_t frame;
 #endif
 	
-#if SIGMA_FILTER_OPEN
+#if SIGMA_FILTER_OPEN && OPEN_DISP
 int16 accel_pos = 0;
 #endif
 
@@ -252,7 +258,7 @@ int main(void)
     
 	//delay_ms(10000);
 	
-	#if  SIGMA_FILTER_OPEN
+	#if  SIGMA_FILTER_OPEN && OPEN_DISP
 	for(i = 0; i < ACC_FILTER_COUNT * 1.5; i++)
 	{
 		dmp_read_fifo(gyro, accel, quat, &timestamp, &sensors, &more);
@@ -278,7 +284,7 @@ int main(void)
 //		}
 
 		
-		#if  SIGMA_FILTER_OPEN
+		#if  SIGMA_FILTER_OPEN  && OPEN_DISP
 		insert_AccelData(accel);
 		#endif
 		
@@ -288,14 +294,14 @@ int main(void)
             q[0]=quat[0] / 1073741824.0f;
             q[1]=quat[1] / 1073741824.0f;
             q[2]=quat[2] / 1073741824.0f;
-            q[3]=quat[3] / 1073741824.0f;
-
-//            // 由四元数所得的欧拉角，单位度
-//            Pitch = asin(-2 * q[1] * q[3] + 2 * q[0]* q[2]) *57.3; // pitch
-//            Roll = atan2(2 * q[2] * q[3] + 2 * q[0] * q[1], -2 * q[1] * q[1] - 2 * q[2]* q[2] + 1)*57.3; // roll
-//            Yaw = 	atan2(2*(q[1]*q[2] + q[0]*q[3]),q[0]*q[0]+q[1]*q[1]-q[2]*q[2]-q[3]*q[3])*57.3 ;		//感觉没有价值，注掉     
+            q[3]=quat[3] / 1073741824.0f;    
+			
+//			// 由四元数所得的欧拉角，单位度
+//			Pitch = asin(-2 * q[1] * q[3] + 2 * q[0]* q[2]) *57.3; // pitch
+//			Roll = atan2(2 * q[2] * q[3] + 2 * q[0] * q[1], -2 * q[1] * q[1] - 2 * q[2]* q[2] + 1)*57.3; // roll
+//			Yaw = 	atan2(2*(q[1]*q[2] + q[0]*q[3]),q[0]*q[0]+q[1]*q[1]-q[2]*q[2]-q[3]*q[3])*57.3 ;		//感觉没有价值，注掉 
 		}
-		
+		#if OPEN_DISP
 		if((sensors & INV_XYZ_ACCEL))
 		{		
 			// 先对加速度进行滤波
@@ -341,7 +347,7 @@ int main(void)
 			#endif
 			
 			#if UPPER_COMPUTER_MATLAB
-			ReportData(0x51,accel_show [0],accel_show [1],accel_show [2],0);
+			ReportData(0x51,accel[0],accel[1],accel[2],0);
 			ReportData(0x52,gyro [0],gyro [1],gyro [2],0);
 			#endif
 			
@@ -412,7 +418,62 @@ int main(void)
 			f_write(&fnew, textFileBuffer, sizeof(textFileBuffer), &bw);
 			#endif
 
-		}	
+		}
+		#endif
+		
+		if((sensors & INV_XYZ_GYRO))
+		{
+			#if OPEN_ANGLE
+			
+			// 获取原始数据，由四元数所得的欧拉角，单位度	
+			angle_res[1][0] = asin(-2 * q[1] * q[3] + 2 * q[0]* q[2]) * 57.3; // pitch *57.3
+			angle_res[1][1] = atan2(2 * q[2] * q[3] + 2 * q[0] * q[1], -2 * q[1] * q[1] - 2 * q[2]* q[2] + 1) * 57.3; // roll *57.3
+			angle_res[1][2] = atan2(2*(q[1]*q[2] + q[0]*q[3]),q[0]*q[0]+q[1]*q[1]-q[2]*q[2]-q[3]*q[3]) * 57.3 ;		//感觉没有价值，注掉 *57.3
+			
+			#if UPPER_COMPUTER_MATLAB
+			ReportData(0x53,angle_res[1][0],angle_res[1][1],angle_res[1][2],0);
+			#elif UPPER_COMPUTER_NIMING
+			Data_Send_Status((float)angle_res[1][0],(float)angle_res[1][1],(float)angle_res[1][2]);
+//			#else
+//			printf("%ld, %ld, %ld\r\n",angle[0],angle[1],angle[2]);
+			#endif
+			
+			
+//			// 原始数据滤波,效果非常不好
+//			#if ANGLE_FILTER_AVERGE
+//			angle_Filter(angle, angle_ave);
+//			#endif
+			
+//			#if UPPER_COMPUTER_MATLAB
+//			ReportData(0x53,angle_ave[0],angle_ave[1],angle_ave[2],0);
+//			#elif UPPER_COMPUTER_NIMING
+//			Data_Send_Status((float)angle_ave[0],(float)angle_ave[1],(float)angle_ave[2]);
+////			#else
+////			printf("%ld, %ld, %ld\r\n",angle_ave[0],angle_ave[1],angle_ave[2]);
+//			#endif
+			
+//			// 将基于载体坐标系的值转换为参考坐标系
+//			accel_BConvertToN(angle_res[1],angle_ave,q);
+			
+			#if USB_SEND_DATA
+
+			frame.X = (angle_res[0][2] - angle_res[1][2]) * 20;
+			frame.Y = (angle_res[1][0] - angle_res[0][0]) * 20;
+			sendCom_USBComm(&frame , 1000);
+			LED1_TOGGLE;
+			#endif
+			
+			// 将当前角度覆盖上一量
+			for(i = 0; i < 3; i++)
+			{
+				angle_res[0][0] = angle_res[1][0];
+				angle_res[0][1] = angle_res[1][1];
+				angle_res[0][2] = angle_res[1][2];
+			}		
+			
+			
+			#endif				
+		}
 //		delay_ms(2);
 		
 		#if SD_DATA_PROCESS

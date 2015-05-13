@@ -36,11 +36,18 @@
 #define ACCEL_WINDOW_H	400
 #define ACCEL_WINDOW_L	-400
 
+#define ANGLE_WINDOW_H	1
+#define ANGLE_WINDOW_L	-1
+
 #define	ACC_FILTER_COUNT	50
 #define TRESHOLD_COUNT 10
+#define ANGLE_FILTER_COUNT 4
 
 #define SIGMA_FILTER_OPEN 	1
 #define AVERGE_FILTER_OPEN 	0
+
+#define ANGLE_FILTER_AVERGE_OPEN	1
+#define ANGLE_FILTER_AVERGE	1
 
 #define GYRO_DRIFT_H	300
 #define GYRO_DRIFT_L	-300
@@ -48,6 +55,7 @@
 #if  SIGMA_FILTER_OPEN
 extern int16	acc_xyz_data[3][ACC_FILTER_COUNT];
 #endif
+
 /**************************************************************
 *	Struct Define Section
 **************************************************************/
@@ -62,6 +70,7 @@ void position(int32 accel_n[2][3], int32 vel[2][3], int32 displayment[2][3]);
 void sigma_Filter(int16 accel[][ACC_FILTER_COUNT], int32 accel_res[][ACC_FILTER_COUNT], int16 pos, int16 N, int16 K);
 void insert_AccelData(int16 accel[3]);
 int16 originalPlace_Drift(int16 gyro[3]);
+void angle_Filter(int32 angle[3], int32 angle_ave[3]);
 /**************************************************************
 *	End-Multi-Include-Prevent Section
 **************************************************************/
